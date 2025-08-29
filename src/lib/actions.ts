@@ -82,7 +82,7 @@ export async function deleteTenant(id: string) {
 // Mapping Actions
 const mappingSchema = z.object({
   senderName: z.string().min(1, 'Sender name is required.'),
-  tenantId: z.string().min(1, 'Tenant is required.'),
+  tenantId: z.string().min(1, 'Please select a tenant.'),
 });
 
 export async function addMapping(prevState: any, formData: FormData) {
@@ -203,6 +203,6 @@ export async function uploadCheck(prevState: any, formData: FormData) {
     return { message: `Check ${result.checkId} uploaded successfully.` };
   } catch (e: any) {
     console.error('Failed to upload check:', e);
-    return { errors: { _server: [e.message || 'Failed to upload check.'] } };
+    return { errors: { _server: [e.message || 'An unknown error occurred while uploading check.'] } };
   }
 }

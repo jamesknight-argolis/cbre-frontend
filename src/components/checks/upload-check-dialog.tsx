@@ -51,7 +51,7 @@ export function UploadCheckDialog() {
     if (state.errors?._server) {
       toast({
         variant: 'destructive',
-        title: 'Error',
+        title: 'Upload Failed',
         description: state.errors._server[0],
       });
     }
