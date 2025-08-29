@@ -1,7 +1,7 @@
 'use server';
 /**
  * @fileOverview A function for uploading a check image, creating a database entry,
- * and storing the image in Firebase Storage.
+ * and storing the image in Google Cloud Storage.
  *
  * - uploadCheckFlow - The main flow function.
  * - UploadCheckOutput - The return type for the flow.
@@ -13,10 +13,9 @@ import {
   updateDoc,
   serverTimestamp,
 } from 'firebase/firestore';
-import { getStorage, ref, uploadString, getDownloadURL } from 'firebase/storage';
+import { Storage } from '@google-cloud/storage';
 import { randomUUID } from 'crypto';
 import { db } from '@/lib/firebase';
-import { getApp } from 'firebase/app';
 
 const UploadCheckOutputSchema = z.object({
   checkId: z.string().describe('The ID of the created check document.'),
@@ -44,21 +43,27 @@ export async function uploadCheckFlow(
   const docRef = await addDoc(checkCollection, newCheck);
   const newCheckId = docRef.id;
 
-  // 2. Upload the image to Firebase Storage
-  const app = getApp();
-  const storage = getStorage(app);
-  const storagePath = `checks/${newCheckId}/${checkId}.jpg`;
-  const storageRef = ref(storage, storagePath);
+  // 2. Upload the image to Google Cloud Storage
+  const storage = new Storage({
+    projectId: 'checkmapper'
+  });
+  const bucketName = 'cbre-poc-checks';
+  const bucket = storage.bucket(bucketName);
+  const filePath = `checks/${newCheckId}/${checkId}.jpg`;
+  const file = bucket.file(filePath);
 
-  // We need to strip the data URI prefix
+  // We need to strip the data URI prefix and decode from base64
   const base64Data = photoDataUri.substring(photoDataUri.indexOf(',') + 1);
+  const imageBuffer = Buffer.from(base64Data, 'base64');
 
-  await uploadString(storageRef, base64Data, 'base64', {
-    contentType: 'image/jpeg',
+  await file.save(imageBuffer, {
+    metadata: {
+      contentType: 'image/jpeg',
+    },
   });
 
-  // 3. Get the download URL
-  const downloadURL = await getDownloadURL(storageRef);
+  // 3. Construct the public URL
+  const downloadURL = `https://storage.googleapis.com/${bucketName}/${filePath}`;
 
   // 4. Update the Firestore document with the image URL and a temporary sender name
   await updateDoc(docRef, {
