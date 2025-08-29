@@ -9,7 +9,7 @@ export type Mapping = {
   tenantId: string;
 };
 
-export type CheckStatus = "Incoming" | "Processed" | "Approved" | "Denied";
+export type CheckStatus = 'Incoming' | 'Processed' | 'Approved' | 'Denied';
 
 export type Check = {
   id: string;
@@ -20,4 +20,6 @@ export type Check = {
   isSuggestion: boolean;
   suggestionReason: string | null;
   mappingConfidence: number | null;
+  imageUrl?: string;
+  createdAt: any; // Using `any` for Firebase Timestamp for simplicity
 };

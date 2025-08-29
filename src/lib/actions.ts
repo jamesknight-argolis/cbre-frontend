@@ -1,19 +1,25 @@
-"use server";
+'use server';
 
-import { revalidatePath } from "next/cache";
-import { collection, addDoc, doc, updateDoc, deleteDoc } from "firebase/firestore";
-import { z } from "zod";
-import { db } from "./firebase";
-import { CheckStatus } from "@/types";
+import { revalidatePath } from 'next/cache';
+import {
+  collection,
+  addDoc,
+  doc,
+  updateDoc,
+  deleteDoc,
+} from 'firebase/firestore';
+import { z } from 'zod';
+import { db } from './firebase';
+import { uploadCheckFlow } from '@/ai/flows/upload-check-flow';
 
 // Tenant Actions
 const tenantSchema = z.object({
-  tenantName: z.string().min(1, "Tenant name is required."),
+  tenantName: z.string().min(1, 'Tenant name is required.'),
 });
 
 export async function addTenant(prevState: any, formData: FormData) {
   const validatedFields = tenantSchema.safeParse({
-    tenantName: formData.get("tenantName"),
+    tenantName: formData.get('tenantName'),
   });
 
   if (!validatedFields.success) {
@@ -23,18 +29,22 @@ export async function addTenant(prevState: any, formData: FormData) {
   }
 
   try {
-    await addDoc(collection(db, "tenants"), validatedFields.data);
-    revalidatePath("/tenants");
-    return { message: "Tenant added successfully." };
+    await addDoc(collection(db, 'tenants'), validatedFields.data);
+    revalidatePath('/tenants');
+    return { message: 'Tenant added successfully.' };
   } catch (e) {
-    console.error("Failed to add tenant:", e);
-    return { errors: { _server: ["Failed to add tenant."] } };
+    console.error('Failed to add tenant:', e);
+    return { errors: { _server: ['Failed to add tenant.'] } };
   }
 }
 
-export async function updateTenant(id: string, prevState: any, formData: FormData) {
+export async function updateTenant(
+  id: string,
+  prevState: any,
+  formData: FormData
+) {
   const validatedFields = tenantSchema.safeParse({
-    tenantName: formData.get("tenantName"),
+    tenantName: formData.get('tenantName'),
   });
 
   if (!validatedFields.success) {
@@ -44,40 +54,39 @@ export async function updateTenant(id: string, prevState: any, formData: FormDat
   }
 
   try {
-    const tenantRef = doc(db, "tenants", id);
+    const tenantRef = doc(db, 'tenants', id);
     await updateDoc(tenantRef, validatedFields.data);
-    revalidatePath("/tenants");
-    revalidatePath("/mappings");
-    return { message: "Tenant updated successfully." };
+    revalidatePath('/tenants');
+    revalidatePath('/mappings');
+    return { message: 'Tenant updated successfully.' };
   } catch (e) {
-    console.error("Failed to update tenant:", e);
-    return { errors: { _server: ["Failed to update tenant."] } };
+    console.error('Failed to update tenant:', e);
+    return { errors: { _server: ['Failed to update tenant.'] } };
   }
 }
 
 export async function deleteTenant(id: string) {
   try {
-    await deleteDoc(doc(db, "tenants", id));
-    revalidatePath("/tenants");
-    revalidatePath("/mappings");
-    return { message: "Tenant deleted successfully." };
+    await deleteDoc(doc(db, 'tenants', id));
+    revalidatePath('/tenants');
+    revalidatePath('/mappings');
+    return { message: 'Tenant deleted successfully.' };
   } catch (e) {
-    console.error("Failed to delete tenant:", e);
-    return { error: "Failed to delete tenant." };
+    console.error('Failed to delete tenant:', e);
+    return { error: 'Failed to delete tenant.' };
   }
 }
 
-
 // Mapping Actions
 const mappingSchema = z.object({
-  senderName: z.string().min(1, "Sender name is required."),
-  tenantId: z.string().min(1, "Tenant is required."),
+  senderName: z.string().min(1, 'Sender name is required.'),
+  tenantId: z.string().min(1, 'Tenant is required.'),
 });
 
 export async function addMapping(prevState: any, formData: FormData) {
   const validatedFields = mappingSchema.safeParse({
-    senderName: formData.get("senderName"),
-    tenantId: formData.get("tenantId"),
+    senderName: formData.get('senderName'),
+    tenantId: formData.get('tenantId'),
   });
 
   if (!validatedFields.success) {
@@ -85,21 +94,25 @@ export async function addMapping(prevState: any, formData: FormData) {
       errors: validatedFields.error.flatten().fieldErrors,
     };
   }
-  
+
   try {
-    await addDoc(collection(db, "internal_mappings"), validatedFields.data);
-    revalidatePath("/mappings");
-    return { message: "Mapping added successfully." };
+    await addDoc(collection(db, 'internal_mappings'), validatedFields.data);
+    revalidatePath('/mappings');
+    return { message: 'Mapping added successfully.' };
   } catch (e) {
-    console.error("Failed to add mapping:", e);
-    return { errors: { _server: ["Failed to add mapping."] } };
+    console.error('Failed to add mapping:', e);
+    return { errors: { _server: ['Failed to add mapping.'] } };
   }
 }
 
-export async function updateMapping(id: string, prevState: any, formData: FormData) {
-   const validatedFields = mappingSchema.safeParse({
-    senderName: formData.get("senderName"),
-    tenantId: formData.get("tenantId"),
+export async function updateMapping(
+  id: string,
+  prevState: any,
+  formData: FormData
+) {
+  const validatedFields = mappingSchema.safeParse({
+    senderName: formData.get('senderName'),
+    tenantId: formData.get('tenantId'),
   });
 
   if (!validatedFields.success) {
@@ -109,39 +122,43 @@ export async function updateMapping(id: string, prevState: any, formData: FormDa
   }
 
   try {
-    const mappingRef = doc(db, "internal_mappings", id);
+    const mappingRef = doc(db, 'internal_mappings', id);
     await updateDoc(mappingRef, validatedFields.data);
-    revalidatePath("/mappings");
-    return { message: "Mapping updated successfully." };
+    revalidatePath('/mappings');
+    return { message: 'Mapping updated successfully.' };
   } catch (e) {
-    console.error("Failed to update mapping:", e);
-    return { errors: { _server: ["Failed to update mapping."] } };
+    console.error('Failed to update mapping:', e);
+    return { errors: { _server: ['Failed to update mapping.'] } };
   }
 }
 
 export async function deleteMapping(id: string) {
   try {
-    await deleteDoc(doc(db, "internal_mappings", id));
-    revalidatePath("/mappings");
-    return { message: "Mapping deleted successfully." };
+    await deleteDoc(doc(db, 'internal_mappings', id));
+    revalidatePath('/mappings');
+    return { message: 'Mapping deleted successfully.' };
   } catch (e) {
-    console.error("Failed to delete mapping:", e);
-    return { error: "Failed to delete mapping." };
+    console.error('Failed to delete mapping:', e);
+    return { error: 'Failed to delete mapping.' };
   }
 }
 
 // Check Actions
 const checkUpdateSchema = z.object({
-  status: z.enum(["Incoming", "Processed", "Approved", "Denied"]),
+  status: z.enum(['Incoming', 'Processed', 'Approved', 'Denied']),
   mappedTenantId: z.string().nullable(),
 });
 
-export async function updateCheck(id: string, prevState: any, formData: FormData) {
+export async function updateCheck(
+  id: string,
+  prevState: any,
+  formData: FormData
+) {
   const validatedFields = checkUpdateSchema.safeParse({
-    status: formData.get("status"),
-    mappedTenantId: formData.get("mappedTenantId") || null,
+    status: formData.get('status'),
+    mappedTenantId: formData.get('mappedTenantId') || null,
   });
-  
+
   if (!validatedFields.success) {
     return {
       errors: validatedFields.error.flatten().fieldErrors,
@@ -149,16 +166,41 @@ export async function updateCheck(id: string, prevState: any, formData: FormData
   }
 
   try {
-    const checkRef = doc(db, "checks", id);
+    const checkRef = doc(db, 'checks', id);
     await updateDoc(checkRef, {
       ...validatedFields.data,
       isSuggestion: false, // User action overrides suggestion
     });
-    revalidatePath("/");
+    revalidatePath('/');
     revalidatePath(`/checks/${id}`);
-    return { message: "Check updated successfully." };
+    return { message: 'Check updated successfully.' };
   } catch (e) {
-    console.error("Failed to update check:", e);
-    return { errors: { _server: ["Failed to update check."] } };
+    console.error('Failed to update check:', e);
+    return { errors: { _server: ['Failed to update check.'] } };
+  }
+}
+
+const uploadCheckSchema = z.object({
+  photoDataUri: z.string().min(1, 'Image data is required.'),
+});
+
+export async function uploadCheck(prevState: any, formData: FormData) {
+  const validatedFields = uploadCheckSchema.safeParse({
+    photoDataUri: formData.get('photoDataUri'),
+  });
+
+  if (!validatedFields.success) {
+    return {
+      errors: validatedFields.error.flatten().fieldErrors,
+    };
+  }
+
+  try {
+    const result = await uploadCheckFlow(validatedFields.data.photoDataUri);
+    revalidatePath('/');
+    return { message: `Check ${result.checkId} uploaded successfully.` };
+  } catch (e) {
+    console.error('Failed to upload check:', e);
+    return { errors: { _server: ['Failed to upload check.'] } };
   }
 }
