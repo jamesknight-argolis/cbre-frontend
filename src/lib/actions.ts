@@ -29,7 +29,8 @@ export async function addTenant(prevState: any, formData: FormData) {
   }
 
   try {
-    await addDoc(collection(db, 'tenants'), {
+    const tenantsCollection = collection(db, 'tenants');
+    await addDoc(tenantsCollection, {
       ...validatedFields.data,
     });
     revalidatePath('/tenants');
@@ -69,7 +70,8 @@ export async function updateTenant(
 
 export async function deleteTenant(id: string) {
   try {
-    await deleteDoc(doc(db, 'tenants', id));
+    const tenantRef = doc(db, 'tenants', id);
+    await deleteDoc(tenantRef);
     revalidatePath('/tenants');
     revalidatePath('/mappings');
     return { message: 'Tenant deleted successfully.' };
@@ -98,7 +100,8 @@ export async function addMapping(prevState: any, formData: FormData) {
   }
 
   try {
-    await addDoc(collection(db, 'internal_mappings'), validatedFields.data);
+    const mappingsCollection = collection(db, 'internal_mappings');
+    await addDoc(mappingsCollection, validatedFields.data);
     revalidatePath('/mappings');
     return { message: 'Mapping added successfully.' };
   } catch (e) {
@@ -136,7 +139,8 @@ export async function updateMapping(
 
 export async function deleteMapping(id: string) {
   try {
-    await deleteDoc(doc(db, 'internal_mappings', id));
+    const mappingRef = doc(db, 'internal_mappings', id);
+    await deleteDoc(mappingRef);
     revalidatePath('/mappings');
     return { message: 'Mapping deleted successfully.' };
   } catch (e) {
@@ -203,6 +207,10 @@ export async function uploadCheck(prevState: any, formData: FormData) {
     return { message: `Check ${result.checkId} uploaded successfully.` };
   } catch (e: any) {
     console.error('Failed to upload check:', e);
-    return { errors: { _server: [e.message || 'An unknown error occurred while uploading check.'] } };
+    return {
+      errors: {
+        _server: [e.message || 'An unknown error occurred while uploading check.'],
+      },
+    };
   }
 }

@@ -7,15 +7,8 @@
  * - UploadCheckOutput - The return type for the flow.
  */
 import { z } from 'zod';
-import {
-  collection,
-  addDoc,
-  updateDoc,
-  serverTimestamp,
-} from 'firebase/firestore';
-import { Storage } from '@google-cloud/storage';
+import { admin, firestoreDb, storage } from '@/lib/firebase-admin';
 import { randomUUID } from 'crypto';
-import { db } from '@/lib/firebase';
 
 const UploadCheckOutputSchema = z.object({
   checkId: z.string().describe('The ID of the created check document.'),
@@ -27,8 +20,8 @@ export async function uploadCheckFlow(
 ): Promise<UploadCheckOutput> {
   // 1. Create a new check document in Firestore
   const checkId = randomUUID();
-  const checkCollection = collection(db, 'checks');
-
+  const db = firestoreDb.collection('checks');
+  
   const newCheck = {
     checkId: checkId,
     status: 'Incoming' as const,
@@ -37,18 +30,14 @@ export async function uploadCheckFlow(
     isSuggestion: false,
     suggestionReason: null,
     mappingConfidence: null,
-    createdAt: serverTimestamp(),
+    createdAt: admin.firestore.FieldValue.serverTimestamp(),
   };
 
-  const docRef = await addDoc(checkCollection, newCheck);
+  const docRef = await db.add(newCheck);
   const newCheckId = docRef.id;
 
   // 2. Upload the image to Google Cloud Storage
-  const storage = new Storage({
-    projectId: 'checkmapper'
-  });
-  const bucketName = 'cbre-poc-checks';
-  const bucket = storage.bucket(bucketName);
+  const bucket = storage.bucket('cbre-poc-checks');
   const filePath = `checks/${newCheckId}/${checkId}.jpg`;
   const file = bucket.file(filePath);
 
@@ -63,10 +52,10 @@ export async function uploadCheckFlow(
   });
 
   // 3. Construct the public URL
-  const downloadURL = `https://storage.googleapis.com/${bucketName}/${filePath}`;
+  const downloadURL = `https://storage.googleapis.com/${bucket.name}/${filePath}`;
 
   // 4. Update the Firestore document with the image URL and a temporary sender name
-  await updateDoc(docRef, {
+  await docRef.update({
     imageUrl: downloadURL,
     senderName: `Uploaded Check ${newCheckId.substring(0, 4)}`, // Placeholder name
   });
