@@ -5,3 +5,14 @@ runConfig:
   # Increase this value if you'd like to automatically spin up
   # more instances in response to increased traffic.
   maxInstances: 1
+iam:
+  serviceAccount: app-hosting-run-invoker
+  roles:
+    - type: predefined
+      role: firebasedatabase.admin
+    - type: predefined
+      role: secretmanager.secretAccessor
+    - type: predefined
+      role: datastore.user
+    - type: predefined
+      role: cloudtranslate.user
