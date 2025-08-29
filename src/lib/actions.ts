@@ -7,6 +7,7 @@ import {
   doc,
   updateDoc,
   deleteDoc,
+  serverTimestamp,
 } from 'firebase/firestore';
 import { z } from 'zod';
 import { db } from './firebase';
@@ -183,4 +184,46 @@ export async function updateCheck(
     console.error('Failed to update check:', e);
     return { errors: { _server: ['Failed to update check.'] } };
   }
+}
+
+const checkUploadSchema = z.object({
+    checkImage: z
+      .instanceof(File)
+      .refine((file) => file.size > 0, { message: 'An image is required.' })
+  });
+  
+
+export async function createCheck(prevState: any, formData: FormData) {
+    const validatedFields = checkUploadSchema.safeParse({
+      checkImage: formData.get('checkImage'),
+    });
+  
+    if (!validatedFields.success) {
+      return {
+        errors: validatedFields.error.flatten().fieldErrors,
+      };
+    }
+
+    try {
+        const newDoc = {
+            status: 'Incoming' as const,
+            senderName: 'Manual Upload',
+            checkId: `manual-${Date.now()}`,
+            mappedTenantId: null,
+            isSuggestion: false,
+            suggestionReason: null,
+            mappingConfidence: null,
+            imageUrl: null, // Not saving the image yet
+            createdAt: serverTimestamp(),
+          };
+      
+          await addDoc(collection(db, 'checks'), newDoc);
+      
+          revalidatePath('/');
+          return { message: 'Check document created successfully.' };
+
+    } catch(e) {
+        console.error('Failed to create check document:', e);
+        return { errors: { _server: ['Failed to create check document.'] } };
+    }
 }
