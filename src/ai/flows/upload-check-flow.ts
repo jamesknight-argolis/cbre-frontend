@@ -1,14 +1,12 @@
 'use server';
 /**
- * @fileOverview A flow for uploading a check image, creating a database entry,
+ * @fileOverview A function for uploading a check image, creating a database entry,
  * and storing the image in Firebase Storage.
  *
  * - uploadCheckFlow - The main flow function.
  * - UploadCheckOutput - The return type for the flow.
  */
-
-import { ai } from '@/ai/genkit';
-import { z } from 'genkit';
+import { z } from 'zod';
 import {
   collection,
   addDoc,
@@ -31,7 +29,7 @@ export async function uploadCheckFlow(
   // 1. Create a new check document in Firestore
   const checkId = randomUUID();
   const checkCollection = collection(db, 'checks');
-  
+
   const newCheck = {
     checkId: checkId,
     status: 'Incoming' as const,
