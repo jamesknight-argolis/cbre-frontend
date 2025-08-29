@@ -187,7 +187,7 @@ export async function updateCheck(
 }
 
 const checkUploadSchema = z.object({
-    checkImage: z.string().min(1, 'An image is required.'),
+    checkImage: z.instanceof(File).refine(file => file.size > 0, 'An image is required.'),
 });
   
 

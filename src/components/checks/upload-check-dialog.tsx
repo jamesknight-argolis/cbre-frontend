@@ -55,15 +55,6 @@ export function UploadCheckDialog() {
     }
   }, [state, toast]);
 
-  const fileToDataUri = (file: File) => {
-    return new Promise<string>((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => resolve(reader.result as string);
-      reader.onerror = reject;
-      reader.readAsDataURL(file);
-    });
-  }
-
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = event.target.files?.[0];
     if (selectedFile) {
@@ -71,17 +62,6 @@ export function UploadCheckDialog() {
       setPreviewUrl(url);
     }
   };
-
-  const handleFormAction = async (formData: FormData) => {
-    const fileInput = fileInputRef.current;
-    if (fileInput?.files?.[0]) {
-      const dataUri = await fileToDataUri(fileInput.files[0]);
-      formData.set('checkImage', dataUri);
-    } else {
-      formData.set('checkImage', '');
-    }
-    formAction(formData);
-  }
 
   const resetAndClose = () => {
     setPreviewUrl(null);
@@ -116,7 +96,7 @@ export function UploadCheckDialog() {
         <DialogHeader>
           <DialogTitle>Upload a New Check</DialogTitle>
         </DialogHeader>
-        <form ref={formRef} action={handleFormAction}>
+        <form ref={formRef} action={formAction}>
           <div className="grid gap-4 py-4">
             {previewUrl ? (
               <div className="relative group">
@@ -143,7 +123,7 @@ export function UploadCheckDialog() {
             ) : (
                 <div className="flex items-center justify-center w-full">
                     <Label
-                    htmlFor="check-upload"
+                    htmlFor="checkImage"
                     className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer bg-muted hover:bg-muted/80"
                     >
                     <div className="flex flex-col items-center justify-center pt-5 pb-6">
@@ -156,8 +136,8 @@ export function UploadCheckDialog() {
               </div>
             )}
             <Input
-                id="check-upload"
-                name="checkImage-hidden" // Use a different name to not conflict
+                id="checkImage"
+                name="checkImage"
                 type="file"
                 className="hidden"
                 onChange={handleFileChange}
