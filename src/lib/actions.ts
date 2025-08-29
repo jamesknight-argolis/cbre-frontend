@@ -10,7 +10,6 @@ import {
 } from 'firebase/firestore';
 import { z } from 'zod';
 import { db } from './firebase';
-import { uploadCheckFlow } from '@/ai/flows/upload-check-flow';
 
 // Tenant Actions
 const tenantSchema = z.object({
@@ -183,34 +182,5 @@ export async function updateCheck(
   } catch (e) {
     console.error('Failed to update check:', e);
     return { errors: { _server: ['Failed to update check.'] } };
-  }
-}
-
-const uploadCheckSchema = z.object({
-  photoDataUri: z.string().min(1, 'Image data is required.'),
-});
-
-export async function uploadCheck(prevState: any, formData: FormData) {
-  const validatedFields = uploadCheckSchema.safeParse({
-    photoDataUri: formData.get('photoDataUri'),
-  });
-
-  if (!validatedFields.success) {
-    return {
-      errors: validatedFields.error.flatten().fieldErrors,
-    };
-  }
-
-  try {
-    const result = await uploadCheckFlow(validatedFields.data.photoDataUri);
-    revalidatePath('/');
-    return { message: `Check ${result.checkId} uploaded successfully.` };
-  } catch (e: any) {
-    console.error('Failed to upload check:', e);
-    return {
-      errors: {
-        _server: [e.message || 'An unknown error occurred while uploading check.'],
-      },
-    };
   }
 }

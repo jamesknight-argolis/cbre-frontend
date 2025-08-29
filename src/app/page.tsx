@@ -3,7 +3,6 @@ import { db } from "@/lib/firebase";
 import { Check, Tenant } from "@/types";
 import { ChecksTable } from "@/components/checks/checks-table";
 import { PageHeader } from "@/components/common/page-header";
-import { UploadCheckDialog } from "@/components/checks/upload-check-dialog";
 
 async function getChecks(): Promise<Check[]> {
   const checksCol = query(collection(db, "checks"), orderBy("createdAt", "desc"));
@@ -28,7 +27,6 @@ export default async function Home() {
   return (
     <div className="container mx-auto py-8 px-4 md:px-6">
       <PageHeader title="Check Review Queue">
-        <UploadCheckDialog />
       </PageHeader>
       <p className="mb-6 text-muted-foreground">
         Review and manage incoming checks processed by the agent.
