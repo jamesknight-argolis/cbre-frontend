@@ -1,4 +1,3 @@
-'use server';
 /**
  * @fileOverview A function for uploading a check image, creating a database entry,
  * and storing the image in Google Cloud Storage.
@@ -24,7 +23,7 @@ export async function uploadCheckFlow(
   const newCheckId = docRef.id;
 
   // 2. Upload the image to Google Cloud Storage
-  const bucket = storage.bucket('cbre-poc-checks');
+  const bucket = storage.bucket();
   const filePath = `checks/${newCheckId}/${checkId}.jpg`;
   const file = bucket.file(filePath);
 
