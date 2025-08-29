@@ -199,8 +199,8 @@ export async function uploadCheck(prevState: any, formData: FormData) {
     const result = await uploadCheckFlow(validatedFields.data.photoDataUri);
     revalidatePath('/');
     return { message: `Check ${result.checkId} uploaded successfully.` };
-  } catch (e) {
+  } catch (e: any) {
     console.error('Failed to upload check:', e);
-    return { errors: { _server: ['Failed to upload check.'] } };
+    return { errors: { _server: [e.message || 'Failed to upload check.'] } };
   }
 }
