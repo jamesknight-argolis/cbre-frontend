@@ -190,7 +190,12 @@ const checkUploadSchema = z.object({
     checkImage: z
       .instanceof(File)
       .refine((file) => file.size > 0, { message: 'An image is required.' })
-  });
+      .refine((file) => file.size <= 4 * 1024 * 1024, { message: 'Max file size is 4MB.' })
+      .refine(
+        (file) => ["image/jpeg", "image/png", "image/jpg"].includes(file.type),
+        { message: "Only .jpg, .jpeg, and .png formats are supported." }
+    ),
+});
   
 
 export async function createCheck(prevState: any, formData: FormData) {
