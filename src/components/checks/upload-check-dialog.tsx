@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
-import { useFormState, useFormStatus } from 'react-dom';
+import { useState, useRef, useEffect, useActionState } from 'react';
+import { useFormStatus } from 'react-dom';
 import { Upload, X } from 'lucide-react';
 import Image from 'next/image';
 import { useToast } from '@/hooks/use-toast';
@@ -34,7 +34,7 @@ export function UploadCheckDialog() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
-  const [state, formAction] = useFormState(uploadCheck, {
+  const [state, formAction] = useActionState(uploadCheck, {
     message: '',
     errors: {},
   });

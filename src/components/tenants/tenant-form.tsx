@@ -3,8 +3,8 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { useFormState, useFormStatus } from 'react-dom';
-import { useEffect } from "react";
+import { useFormStatus } from 'react-dom';
+import { useEffect, useActionState } from "react";
 
 import { Tenant } from "@/types";
 import { addTenant, updateTenant } from "@/lib/actions";
@@ -38,7 +38,7 @@ export function TenantForm({ tenant, onSuccess }: TenantFormProps) {
   const { toast } = useToast();
 
   const formAction = isEditing ? updateTenant.bind(null, tenant.id) : addTenant;
-  const [state, dispatch] = useFormState(formAction, { message: "", errors: {} });
+  const [state, dispatch] = useActionState(formAction, { message: "", errors: {} });
 
   const form = useForm<TenantFormData>({
     resolver: zodResolver(tenantSchema),

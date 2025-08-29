@@ -3,8 +3,8 @@
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { useFormState, useFormStatus } from "react-dom";
-import { useEffect } from "react";
+import { useFormStatus } from "react-dom";
+import { useEffect, useActionState } from "react";
 
 import { Check, Tenant, CheckStatus } from "@/types";
 import { updateCheck } from "@/lib/actions";
@@ -46,7 +46,7 @@ function SubmitButton() {
 
 export function CheckDetailForm({ check, tenants, tenantsMap }: CheckDetailFormProps) {
   const { toast } = useToast();
-  const [state, formAction] = useFormState(updateCheck.bind(null, check.id), {
+  const [state, formAction] = useActionState(updateCheck.bind(null, check.id), {
     message: "",
     errors: {},
   });

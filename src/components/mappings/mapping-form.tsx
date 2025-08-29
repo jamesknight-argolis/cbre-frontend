@@ -3,8 +3,8 @@
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { useFormState, useFormStatus } from 'react-dom';
-import { useEffect, useState } from "react";
+import { useFormStatus } from 'react-dom';
+import { useEffect, useState, useActionState } from "react";
 
 import { Mapping, Tenant } from "@/types";
 import { addMapping, updateMapping } from "@/lib/actions";
@@ -47,7 +47,7 @@ export function MappingForm({ mapping, tenants, onSuccess }: MappingFormProps) {
   const { toast } = useToast();
   
   const formAction = isEditing ? updateMapping.bind(null, mapping.id) : addMapping;
-  const [state, dispatch] = useFormState(formAction, { message: "", errors: {} });
+  const [state, dispatch] = useActionState(formAction, { message: "", errors: {} });
 
   const form = useForm<MappingFormData>({
     resolver: zodResolver(mappingSchema),
