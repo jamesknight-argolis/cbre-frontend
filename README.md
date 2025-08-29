@@ -28,4 +28,4 @@ After you've successfully authenticated, you can run the seed script:
 npm run seed
 ```
 
-This will now have the correct permissions to write to your Firestore database.
+This will now have the correct permissions to write to your Firestore database in the `cbre-poc` project.
