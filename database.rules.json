@@ -1,0 +1,17 @@
+
+{
+  "rules": {
+    "tenants": {
+      ".read": true,
+      ".write": true
+    },
+    "internal_mappings": {
+      ".read": true,
+      ".write": true
+    },
+    "checks": {
+      ".read": true,
+      ".write": true
+    }
+  }
+}
