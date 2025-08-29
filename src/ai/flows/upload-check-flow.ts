@@ -20,20 +20,7 @@ export async function uploadCheckFlow(
 ): Promise<UploadCheckOutput> {
   // 1. Create a new check document in Firestore
   const checkId = randomUUID();
-  const db = firestoreDb.collection('checks');
-  
-  const newCheck = {
-    checkId: checkId,
-    status: 'Incoming' as const,
-    senderName: 'Unknown', // Will be determined by another process
-    mappedTenantId: null,
-    isSuggestion: false,
-    suggestionReason: null,
-    mappingConfidence: null,
-    createdAt: admin.firestore.FieldValue.serverTimestamp(),
-  };
-
-  const docRef = await db.add(newCheck);
+  const docRef = firestoreDb.collection('checks').doc();
   const newCheckId = docRef.id;
 
   // 2. Upload the image to Google Cloud Storage
@@ -54,11 +41,20 @@ export async function uploadCheckFlow(
   // 3. Construct the public URL
   const downloadURL = `https://storage.googleapis.com/${bucket.name}/${filePath}`;
 
-  // 4. Update the Firestore document with the image URL and a temporary sender name
-  await docRef.update({
-    imageUrl: downloadURL,
+  // 4. Set the Firestore document with the image URL and a temporary sender name
+  const newCheck = {
+    checkId: checkId,
+    status: 'Incoming' as const,
     senderName: `Uploaded Check ${newCheckId.substring(0, 4)}`, // Placeholder name
-  });
+    mappedTenantId: null,
+    isSuggestion: false,
+    suggestionReason: null,
+    mappingConfidence: null,
+    createdAt: admin.firestore.FieldValue.serverTimestamp(),
+    imageUrl: downloadURL,
+  };
+
+  await docRef.set(newCheck);
 
   return { checkId: newCheckId };
 }
