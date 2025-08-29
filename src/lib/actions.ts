@@ -27,6 +27,7 @@ export async function addTenant(prevState: any, formData: FormData) {
     revalidatePath("/tenants");
     return { message: "Tenant added successfully." };
   } catch (e) {
+    console.error("Failed to add tenant:", e);
     return { errors: { _server: ["Failed to add tenant."] } };
   }
 }
@@ -46,8 +47,10 @@ export async function updateTenant(id: string, prevState: any, formData: FormDat
     const tenantRef = doc(db, "tenants", id);
     await updateDoc(tenantRef, validatedFields.data);
     revalidatePath("/tenants");
+    revalidatePath("/mappings");
     return { message: "Tenant updated successfully." };
   } catch (e) {
+    console.error("Failed to update tenant:", e);
     return { errors: { _server: ["Failed to update tenant."] } };
   }
 }
@@ -56,8 +59,10 @@ export async function deleteTenant(id: string) {
   try {
     await deleteDoc(doc(db, "tenants", id));
     revalidatePath("/tenants");
+    revalidatePath("/mappings");
     return { message: "Tenant deleted successfully." };
   } catch (e) {
+    console.error("Failed to delete tenant:", e);
     return { error: "Failed to delete tenant." };
   }
 }
@@ -86,6 +91,7 @@ export async function addMapping(prevState: any, formData: FormData) {
     revalidatePath("/mappings");
     return { message: "Mapping added successfully." };
   } catch (e) {
+    console.error("Failed to add mapping:", e);
     return { errors: { _server: ["Failed to add mapping."] } };
   }
 }
@@ -108,6 +114,7 @@ export async function updateMapping(id: string, prevState: any, formData: FormDa
     revalidatePath("/mappings");
     return { message: "Mapping updated successfully." };
   } catch (e) {
+    console.error("Failed to update mapping:", e);
     return { errors: { _server: ["Failed to update mapping."] } };
   }
 }
@@ -118,6 +125,7 @@ export async function deleteMapping(id: string) {
     revalidatePath("/mappings");
     return { message: "Mapping deleted successfully." };
   } catch (e) {
+    console.error("Failed to delete mapping:", e);
     return { error: "Failed to delete mapping." };
   }
 }
@@ -150,6 +158,7 @@ export async function updateCheck(id: string, prevState: any, formData: FormData
     revalidatePath(`/checks/${id}`);
     return { message: "Check updated successfully." };
   } catch (e) {
+    console.error("Failed to update check:", e);
     return { errors: { _server: ["Failed to update check."] } };
   }
 }

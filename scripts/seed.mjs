@@ -14,7 +14,7 @@ const firebaseConfig = {
 };
 
 const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
+const db = getFirestore(app, "cbre-poc");
 
 async function clearCollection(collectionName) {
     const collectionRef = collection(db, collectionName);
