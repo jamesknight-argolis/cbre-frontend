@@ -29,7 +29,9 @@ export async function addTenant(prevState: any, formData: FormData) {
   }
 
   try {
-    await addDoc(collection(db, 'tenants'), validatedFields.data);
+    await addDoc(collection(db, 'tenants'), {
+      ...validatedFields.data,
+    });
     revalidatePath('/tenants');
     return { message: 'Tenant added successfully.' };
   } catch (e) {
