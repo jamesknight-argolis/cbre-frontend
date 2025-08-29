@@ -4,7 +4,7 @@ import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useFormState, useFormStatus } from 'react-dom';
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 import { Mapping, Tenant } from "@/types";
 import { addMapping, updateMapping } from "@/lib/actions";
@@ -67,7 +67,8 @@ export function MappingForm({ mapping, tenants, onSuccess }: MappingFormProps) {
     }
   }, [state, toast, onSuccess]);
 
-  const { register, control, formState: { errors } } = form;
+  const { register, control, setValue, watch, formState: { errors } } = form;
+  const tenantIdValue = watch("tenantId");
 
   return (
     <form action={dispatch} className="space-y-4">
@@ -91,7 +92,7 @@ export function MappingForm({ mapping, tenants, onSuccess }: MappingFormProps) {
           name="tenantId"
           control={control}
           render={({ field }) => (
-            <Select onValueChange={field.onChange} defaultValue={field.value}>
+            <Select onValueChange={(value) => setValue("tenantId", value, { shouldValidate: true })} defaultValue={field.value}>
               <SelectTrigger id="tenantId" aria-invalid={errors.tenantId || state.errors?.tenantId ? "true" : "false"}>
                 <SelectValue placeholder="Select a tenant" />
               </SelectTrigger>
@@ -105,6 +106,7 @@ export function MappingForm({ mapping, tenants, onSuccess }: MappingFormProps) {
             </Select>
           )}
         />
+        <input type="hidden" {...register("tenantId")} />
         {errors.tenantId && (
           <p className="text-sm text-destructive mt-1">{errors.tenantId.message}</p>
         )}
