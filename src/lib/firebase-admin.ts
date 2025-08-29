@@ -1,4 +1,5 @@
 import * as admin from 'firebase-admin';
+import { getFirestore } from 'firebase-admin/firestore';
 
 if (!admin.apps.length) {
   try {
@@ -12,7 +13,7 @@ if (!admin.apps.length) {
   }
 }
 
-const firestoreDb = admin.firestore();
+const firestoreDb = getFirestore(admin.apps[0]!, 'cbre-poc');
 const storage = admin.storage();
 
 export { admin, firestoreDb, storage };
