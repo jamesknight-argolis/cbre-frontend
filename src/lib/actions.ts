@@ -11,6 +11,7 @@ import {
 } from 'firebase/firestore';
 import { z } from 'zod';
 import { db } from './firebase';
+import { storage } from './firebase-admin';
 
 // Tenant Actions
 const tenantSchema = z.object({
@@ -202,7 +203,24 @@ export async function createCheck(prevState: any, formData: FormData) {
       };
     }
 
+    const { checkImage } = validatedFields.data;
+    
     try {
+        const fileBuffer = Buffer.from(await checkImage.arrayBuffer());
+        const fileName = `checks/${Date.now()}-${checkImage.name}`;
+        const file = storage.bucket().file(fileName);
+
+        await file.save(fileBuffer, {
+            metadata: {
+                contentType: checkImage.type,
+            },
+        });
+
+        const [publicUrl] = await file.getSignedUrl({
+          action: 'read',
+          expires: '03-09-2491'
+        });
+
         const newDoc = {
             status: 'Incoming' as const,
             senderName: 'Manual Upload',
@@ -211,17 +229,17 @@ export async function createCheck(prevState: any, formData: FormData) {
             isSuggestion: false,
             suggestionReason: null,
             mappingConfidence: null,
-            imageUrl: null, // Not saving the image yet
+            imageUrl: publicUrl, 
             createdAt: serverTimestamp(),
           };
       
           await addDoc(collection(db, 'checks'), newDoc);
       
           revalidatePath('/');
-          return { message: 'Check document created successfully.' };
+          return { message: 'Check uploaded successfully.' };
 
     } catch(e) {
         console.error('Failed to create check document:', e);
-        return { errors: { _server: ['Failed to create check document.'] } };
+        return { errors: { _server: ['Failed to upload check.'] } };
     }
 }
