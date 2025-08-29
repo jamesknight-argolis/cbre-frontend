@@ -13,13 +13,11 @@ import {
   DialogTitle,
   DialogTrigger,
   DialogFooter,
-  DialogClose,
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { createCheck } from "@/lib/actions";
-import { Alert, AlertDescription, AlertTitle } from "../ui/alert";
 
 function SubmitButton() {
   const { pending } = useFormStatus();
@@ -32,9 +30,9 @@ function SubmitButton() {
 
 export function UploadCheckDialog() {
   const [isOpen, setIsOpen] = useState(false);
-  const [file, setFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const formRef = useRef<HTMLFormElement>(null);
 
   const { toast } = useToast();
 
@@ -57,24 +55,40 @@ export function UploadCheckDialog() {
     }
   }, [state, toast]);
 
+  const fileToDataUri = (file: File) => {
+    return new Promise<string>((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  }
+
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = event.target.files?.[0];
     if (selectedFile) {
-      setFile(selectedFile);
       const url = URL.createObjectURL(selectedFile);
       setPreviewUrl(url);
     }
   };
 
-  const resetAndClose = () => {
-    setFile(null);
-    if (previewUrl) {
-      URL.revokeObjectURL(previewUrl);
+  const handleFormAction = async (formData: FormData) => {
+    const fileInput = fileInputRef.current;
+    if (fileInput?.files?.[0]) {
+      const dataUri = await fileToDataUri(fileInput.files[0]);
+      formData.set('checkImage', dataUri);
+    } else {
+      formData.set('checkImage', '');
     }
+    formAction(formData);
+  }
+
+  const resetAndClose = () => {
     setPreviewUrl(null);
     if (fileInputRef.current) {
         fileInputRef.current.value = "";
     }
+    formRef.current?.reset();
     setIsOpen(false);
   };
   
@@ -88,7 +102,13 @@ export function UploadCheckDialog() {
   }, [previewUrl]);
 
   return (
-    <Dialog open={isOpen} onOpenChange={(open) => !open && resetAndClose()}>
+    <Dialog open={isOpen} onOpenChange={(open) => {
+        if (!open) {
+          resetAndClose();
+        } else {
+          setIsOpen(true);
+        }
+      }}>
       <DialogTrigger asChild>
         <Button onClick={() => setIsOpen(true)}>Upload Check</Button>
       </DialogTrigger>
@@ -96,7 +116,7 @@ export function UploadCheckDialog() {
         <DialogHeader>
           <DialogTitle>Upload a New Check</DialogTitle>
         </DialogHeader>
-        <form action={formAction}>
+        <form ref={formRef} action={handleFormAction}>
           <div className="grid gap-4 py-4">
             {previewUrl ? (
               <div className="relative group">
@@ -112,12 +132,11 @@ export function UploadCheckDialog() {
                     size="icon"
                     className="absolute top-2 right-2 h-6 w-6 opacity-0 group-hover:opacity-100"
                     onClick={() => {
-                        setFile(null);
                         if (previewUrl) URL.revokeObjectURL(previewUrl);
                         setPreviewUrl(null);
                         if (fileInputRef.current) fileInputRef.current.value = "";
                     }}
-                >
+                 >
                     <X className="h-4 w-4" />
                 </Button>
               </div>
@@ -133,18 +152,18 @@ export function UploadCheckDialog() {
                         <span className="font-semibold">Click to upload</span> or drag and drop
                         </p>
                     </div>
-                    <Input
-                        id="check-upload"
-                        name="checkImage"
-                        type="file"
-                        className="hidden"
-                        onChange={handleFileChange}
-                        accept="image/png, image/jpeg, image/jpg"
-                        ref={fileInputRef}
-                    />
                     </Label>
               </div>
             )}
+            <Input
+                id="check-upload"
+                name="checkImage-hidden" // Use a different name to not conflict
+                type="file"
+                className="hidden"
+                onChange={handleFileChange}
+                accept="image/png, image/jpeg, image/jpg"
+                ref={fileInputRef}
+            />
              {state.errors?.checkImage && (
                 <p className="text-sm text-destructive mt-1">{state.errors.checkImage[0]}</p>
             )}
